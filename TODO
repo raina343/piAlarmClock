@@ -1,0 +1,14 @@
+TODO List
+
+1. get everything running on startup
+2. make sure timezones and the like are correct and time sync is correct
+3. will ideally need some form of powered usb hub that could power the PI and charge a phone
+4. need a better case
+5. will need someway to better dim the displays.  we know we can turn off the LCD light and also adjust the contrast
+6. buttons will need to do something, like muting the warnings
+7. buttons will also need to do things like changing the time
+8. buttons will also need to allow for changing what's shown on the display.
+9. display should be able to show current song name, if available
+9b. current weather/temp
+9c. wifi signal strength
+9d. current uptime
