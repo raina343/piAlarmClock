@@ -3,8 +3,6 @@ from requests.auth import HTTPBasicAuth
 r = requests.get('http://74.205.92.184/nagios/cgi-bin/statusjson.cgi?query=servicelist&formatoptions=whitespace+enumerate+bitmask+duration&contactname=nagiosadmin', auth=HTTPBasicAuth('nagiosadmin', 'P@$$w0rd22'))
 ServiceData = {}
 foo = r.json()
-#print foo
-#exit
 ok=0
 warning=0
 critical=0
