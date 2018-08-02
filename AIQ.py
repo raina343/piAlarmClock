@@ -1,6 +1,7 @@
 import requests
 import sqlite3
 import datetime
+import AlarmClock.functions as ACFunctions
 conn = sqlite3.connect('example2.db') #this will create if it doesn't exist
 
 
@@ -10,9 +11,9 @@ def DailyForecast(conn):
     data = r.json()
     for xx in data:
         if xx['Category']['Number']>2:
-            c.execute("INSERT INTO AQI (DateEntered,ForecastDate,AQI,Comments) VALUES ('"+str(datetime.datetime.now())+"','"+str(xx['DateForecast'])+"','"+str(xx['AQI'])+"','"+xx['Category']['Name']+"')")
+            c.execute("INSERT INTO AQI (DateEntered,ForecastDate,AQI,Comments) VALUES ('"+str(datetime.datetime.now())+"','"+str(ACFunctions.isset(xx,'DateForecast'))+"','"+str(ACFunctions.isset(xx,'AQI'))+"','"+ACFunctions.isset(xx,'Category','Name')+"')")
         else:
-            c.execute("INSERT INTO AQI (DateEntered,ForecastDate,AQI) VALUES ('"+str(datetime.datetime.now())+"','"+str(xx['DateForecast'])+"','"+str(xx['AQI'])+"')")
+            c.execute("INSERT INTO AQI (DateEntered,ForecastDate,AQI) VALUES ('"+str(datetime.datetime.now())+"','"+str(ACFunctions.isset(xx,'DateForecast'))+"','"+str(ACFunctions.isset(xx,'AQI'))+"')")
         
         conn.commit()
         
@@ -25,17 +26,17 @@ def CurrentConditions(conn):
     for yy in data: 
         dbQuery = "INSERT INTO AQICurrentConditions  (DateEntered, DateObserved, HourObserved, LocalTimeZone,ReportingArea,StateCode,Latitude,Longitude,ParameterName,AQI,CategoryNumber, CategoryName) VALUES "
         dbQuery = dbQuery +"('"+str(datetime.datetime.now())+"',"
-        dbQuery = dbQuery +"'"+str(yy['DateObserved'])+"',"
-        dbQuery = dbQuery +"'"+str(yy['HourObserved'])+"',"
-        dbQuery = dbQuery +"'"+str(yy['LocalTimeZone'])+"',"
-        dbQuery = dbQuery +"'"+str(yy['ReportingArea'])+"',"
-        dbQuery = dbQuery +"'"+str(yy['StateCode'])+"',"
-        dbQuery = dbQuery +"'"+str(yy['Latitude'])+"',"
-        dbQuery = dbQuery +"'"+str(yy['Longitude'])+"',"
-        dbQuery = dbQuery +"'"+str(yy['ParameterName'])+"',"
-        dbQuery = dbQuery +"'"+str(yy['AQI'])+"',"
-        dbQuery = dbQuery +"'"+str(yy['Category']['Number'])+"',"
-        dbQuery = dbQuery +"'"+str(yy['Category']['Name'])+"'"
+        dbQuery = dbQuery +"'"+str(ACFunctions.isset(yy,'DateObserved'))+"',"
+        dbQuery = dbQuery +"'"+str(ACFunctions.isset(yy,'HourObserved'))+"',"
+        dbQuery = dbQuery +"'"+str(ACFunctions.isset(yy,'LocalTimeZone'))+"',"
+        dbQuery = dbQuery +"'"+str(ACFunctions.isset(yy,'ReportingArea'))+"',"
+        dbQuery = dbQuery +"'"+str(ACFunctions.isset(yy,'StateCode'))+"',"
+        dbQuery = dbQuery +"'"+str(ACFunctions.isset(yy,'Latitude'))+"',"
+        dbQuery = dbQuery +"'"+str(ACFunctions.isset(yy,'Longitude'))+"',"
+        dbQuery = dbQuery +"'"+str(ACFunctions.isset(yy,'ParameterName'))+"',"
+        dbQuery = dbQuery +"'"+str(ACFunctions.isset(yy,'AQI'))+"',"
+        dbQuery = dbQuery +"'"+str(ACFunctions.isset(yy,'Category','Number'))+"',"
+        dbQuery = dbQuery +"'"+str(ACFunctions.isset(yy,'Category','Name'))+"'"
         dbQuery = dbQuery +")"
         c.execute( dbQuery)
         conn.commit()   

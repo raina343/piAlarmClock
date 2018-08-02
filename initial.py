@@ -29,7 +29,7 @@ else:
 if (checkTableExists(conn,'weather')):
     True
 else:
-    c.execute('''CREATE TABLE weather (DateEntered date, summary text, icon text, sunriseTime text, sunsetTime text,moonPhase text,precipIntensity text, precipIntensityMax text,precipIntensityMaxTime text,precipProbability text,precipType text,temperatureHigh text,temperatureHighTime text,temperatureLow text )''')
+    c.execute('''CREATE TABLE weather (DateEntered date, time int, uvIndex text,windSpeed text,summary text, icon text, sunriseTime text, sunsetTime text,moonPhase text,precipIntensity text, precipIntensityMax text,precipIntensityMaxTime text,precipProbability text,precipType text,temperatureHigh text,temperatureHighTime text,temperatureLow text )''')
     conn.commit()    
 if (checkTableExists(conn,'AQICurrentConditions')):
     True
@@ -49,18 +49,8 @@ if (checkTableExists(conn,'Nagios')):
     c.execute("INSERT INTO Nagios VALUES ('2006-01-05','BUY','RHATddd',100,35.14)")
     conn.commit()
 else:
-    c.execute('''CREATE TABLE Nagios (date text, trans text, symbol text, qty real, price real)''')
+    c.execute('''CREATE TABLE Nagios (DateEntered date, Server text, Service text, Status text,State int)''')
     conn.commit()
     
-#c.execute('''CREATE TABLE stocks (date text, trans text, symbol text, qty real, price real)''')
 
-# Insert a row of data
-#c.execute("INSERT INTO stocks VALUES ('2006-01-05','BUY','RHAT',100,35.14)")
-
-# Save (commit) the changes
-#conn.commit()
-
-# We can also close the connection if we are done with it.
-# Just be sure any changes have been committed or they will be lost.
-#conn.close()
 
