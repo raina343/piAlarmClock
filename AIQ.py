@@ -2,10 +2,12 @@ import requests
 import sqlite3
 import datetime
 import AlarmClock.functions as ACFunctions
-conn = sqlite3.connect('example2.db') #this will create if it doesn't exist
+ #this will create if it doesn't exist
+import threading
 
-
-def DailyForecast(conn):
+def DailyForecast():
+    threading.Timer(86400.0, DailyForecast).start()
+    conn = sqlite3.connect('example2.db')
     c = conn.cursor()
     r = requests.get('http://www.airnowapi.org/aq/forecast/zipCode/?format=application/json&zipCode=95630&date=2018-08-01&distance=25&API_KEY=0501E66A-1CEE-4C3B-9609-E6BE34B25EF1')
     data = r.json()
@@ -17,7 +19,9 @@ def DailyForecast(conn):
         
         conn.commit()
         
-def CurrentConditions(conn):
+def CurrentConditions():
+    threading.Timer(900.0, CurrentConditions).start()
+    conn = sqlite3.connect('example2.db') 
     c = conn.cursor()
     r = requests.get('http://www.airnowapi.org/aq/observation/zipCode/current/?format=application/json&zipCode=95630&distance=25&API_KEY=0501E66A-1CEE-4C3B-9609-E6BE34B25EF1')
     c.execute("DELETE FROM AQICurrentConditions");
@@ -41,5 +45,6 @@ def CurrentConditions(conn):
         c.execute( dbQuery)
         conn.commit()   
 
-foo = CurrentConditions(conn)         
+CurrentConditions()
+DailyForecast()         
         

@@ -5,15 +5,21 @@ import datetime
 
 from var_dump import var_dump
 import AlarmClock.functions as ACFunctions
-conn = sqlite3.connect('example2.db') #this will create if it doesn't exist
+import threading
 
 
-def CurrentConditions(conn,lat,long):
+def CurrentConditions():
+    threading.Timer(900.0, CurrentConditions).start()
+    conn = sqlite3.connect('example2.db')
     c = conn.cursor()
     c.execute("DELETE FROM weatherCurrentconditions");
     conn.commit()  
     c.execute("DELETE FROM weather");
     conn.commit()  
+    dbQuerya = "SELECT * FROM Settings" #get all the data from the database
+    c.execute(dbQuerya)
+    rows = c.fetchall()
+    var_dump(rows)
     weekday = date.today()
     with forecast('7ea6c4099eb2886d284a35a0d0cf15c4', lat,long) as weather:
         current = weather['currently']
@@ -57,4 +63,4 @@ def CurrentConditions(conn,lat,long):
             c.execute( dbQuery2)
             conn.commit()  
             
-foo = CurrentConditions(conn,"38.6767", "-121.1461")
+CurrentConditions()
