@@ -2,14 +2,18 @@ import requests
 import sqlite3
 import datetime
 import AlarmClock.functions as ACFunctions
- #this will create if it doesn't exist
+#this will create if it doesn't exist
 import threading
 
 def DailyForecast():
     threading.Timer(86400.0, DailyForecast).start()
-    conn = sqlite3.connect('example2.db')
+    conn = sqlite3.connect('AIQ.db')
     c = conn.cursor()
-    r = requests.get('http://www.airnowapi.org/aq/forecast/zipCode/?format=application/json&zipCode=95630&date=2018-08-01&distance=25&API_KEY=0501E66A-1CEE-4C3B-9609-E6BE34B25EF1')
+    c.execute("DELETE FROM AQI");
+    conn.commit()
+    now = datetime.datetime.now()
+    today = now.strftime("%Y-%m-%d")
+    r = requests.get('http://www.airnowapi.org/aq/forecast/zipCode/?format=application/json&zipCode=95630&date='+today+'&distance=25&API_KEY=0501E66A-1CEE-4C3B-9609-E6BE34B25EF1')
     data = r.json()
     for xx in data:
         if xx['Category']['Number']>2:
@@ -21,7 +25,7 @@ def DailyForecast():
         
 def CurrentConditions():
     threading.Timer(900.0, CurrentConditions).start()
-    conn = sqlite3.connect('example2.db') 
+    conn = sqlite3.connect('AIQ.db') 
     c = conn.cursor()
     r = requests.get('http://www.airnowapi.org/aq/observation/zipCode/current/?format=application/json&zipCode=95630&distance=25&API_KEY=0501E66A-1CEE-4C3B-9609-E6BE34B25EF1')
     c.execute("DELETE FROM AQICurrentConditions");

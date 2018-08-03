@@ -3,25 +3,29 @@ from datetime import date, timedelta
 import sqlite3
 import datetime
 
-from var_dump import var_dump
+#from var_dump import var_dump
 import AlarmClock.functions as ACFunctions
 import threading
 
 
 def CurrentConditions():
     threading.Timer(900.0, CurrentConditions).start()
-    conn = sqlite3.connect('example2.db')
+    SettingsDB = sqlite3.connect('Settings.db')
+    Settingsc = SettingsDB.cursor()
+    dbQuerya = "SELECT Value FROM Settings where Setting='Latitude'" #get all the data from the database
+    Settingsc.execute(dbQuerya)
+    Latitude = Settingsc.fetchone()
+    dbQueryb = "SELECT Value FROM Settings where Setting='longitude'" #get all the data from the database
+    Settingsc.execute(dbQueryb)
+    longitude = Settingsc.fetchone()  
+    conn = sqlite3.connect('Weather.db')
     c = conn.cursor()
     c.execute("DELETE FROM weatherCurrentconditions");
     conn.commit()  
     c.execute("DELETE FROM weather");
-    conn.commit()  
-    dbQuerya = "SELECT * FROM Settings" #get all the data from the database
-    c.execute(dbQuerya)
-    rows = c.fetchall()
-    var_dump(rows)
-    weekday = date.today()
-    with forecast('7ea6c4099eb2886d284a35a0d0cf15c4', lat,long) as weather:
+    conn.commit()
+  #  weekday = date.today()
+    with forecast('7ea6c4099eb2886d284a35a0d0cf15c4', Latitude[0],longitude[0]) as weather:
         current = weather['currently']
         dbQuery = "INSERT INTO weatherCurrentconditions (DateEntered , time , summary , icon , nearestStormDistance ,precipIntensity ,precipProbability ,temperature , apparentTemperature ,windSpeed ,windGust ,uvIndex ,visibility ) VALUES"
         dbQuery = dbQuery +"('"+str(datetime.datetime.now())+"',"

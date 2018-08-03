@@ -2,17 +2,18 @@ import requests
 from requests.auth import HTTPBasicAuth
 import sqlite3
 import datetime
-from var_dump import var_dump
+#from var_dump import var_dump
 import threading
 
 def updatedata():
     #this is for getting data from the web
     threading.Timer(180.0, updatedata).start() #every 3 minutes we will run this function.  it will also run first when this script is first executed.
-    conn = sqlite3.connect('example2.db') #open db file.
-    c = conn.cursor()
+
     r = requests.get('http://74.205.92.184/nagios/cgi-bin/statusjson.cgi?query=servicelist&formatoptions=whitespace+enumerate+bitmask+duration&contactname=nagiosadmin', auth=HTTPBasicAuth('nagiosadmin', 'P@$$w0rd22')) #ge the data from Nagios
     NagiosData = r.json() #parse the json
     now = datetime.datetime.now() #get a current timestamp, so all updates and inserts show the same time.
+    conn = sqlite3.connect('Nagios.db') #open db file.
+    c = conn.cursor()
     for xx in NagiosData['data']['servicelist']: #itterate through the returned data.
         for yy in NagiosData['data']['servicelist'][xx]:
             dbQuerya = "SELECT count(*) FROM Nagios WHERE Server='"+str(xx)+"' AND Service='"+str(yy)+"'" #check to see if the current entry exists already in the database
@@ -36,15 +37,17 @@ def updatedata():
                     dbQuery = "Update Nagios SET UpdatedDate='"+str(now)+"', Status='"+NagiosData['data']['servicelist'][xx][yy]+"' WHERE Server='"+str(xx)+"' and Service='"+str(yy)+"'"
                 c.execute( dbQuery)
                 conn.commit()
+    conn.close()
            
 def getData():
     #this is what will return the data from the database and update the display
     threading.Timer(60.0, getData).start() #runs every 60 seconds
-    conn = sqlite3.connect('example2.db')
+    conn = sqlite3.connect('Nagios.db')
     c = conn.cursor()
     dbQuerya = "SELECT * FROM Nagios" #get all the data from the database
     c.execute(dbQuerya)
     rows = c.fetchall()
+    conn.close()
     ServiceData = {}
     ok=0
     warning=0
@@ -54,7 +57,8 @@ def getData():
  
     YellowScreen=0
     RedScreen=0
-
+    criticalitems = "C: "
+    warningitems="W: "
     Alarm = 'None'
     ScreenColour='None'
     ServiceData['OK'] = {}
@@ -84,6 +88,7 @@ def getData():
                 else:
                     YellowScreen=1
                     YellowAlarm=YellowAlarm+1
+                    warningitems = warningitems+" "+str(row[1])+" - "+str(row[2])
                 ServiceData['Warning'][row[1]][row[2]] = row[4]
                 warning = warning+1;
                 ServiceData['Warning']['total'] = warning
@@ -95,16 +100,18 @@ def getData():
                 if row[4]>0:
                     RedScreen=1
                 else:
+                    criticalitems = criticalitems+" "+str(row[1])+" - "+str(row[2])
                     RedScreen=1
                     RedAlarm=RedAlarm+1
                 ServiceData['Critical'][row[1]][row[2]] = row[4]
                 critical = critical+1
                 ServiceData['Critical']['total'] = critical
-    print datetime.datetime.now()
-    print 'Critical ' + str(ServiceData['Critical']['total'])
-    print 'Warning '+ str(ServiceData['Warning']['total'])
-    print 'OK '+ str(ServiceData['OK']['total'])
-
+    #print datetime.datetime.now()
+    #print 'Critical ' + str(ServiceData['Critical']['total'])
+    #print 'Warning '+ str(ServiceData['Warning']['total'])
+    #print 'OK '+ str(ServiceData['OK']['total'])
+    grandtotal = ServiceData['OK']['total']+ServiceData['Warning']['total']+ServiceData['Critical']['total']
+    text = 'T: '+str(grandtotal)+' / C:' + str(ServiceData['Critical']['total'])+' / W: '+ str(ServiceData['Warning']['total'])+' / OK: '+ str(ServiceData['OK']['total'])
     if (RedAlarm==1 and YellowAlarm==1):
         Alarm='orange'
     if (RedAlarm==1 and YellowAlarm==0):
@@ -121,9 +128,15 @@ def getData():
         ScreenColour='yellow'
     if (RedScreen==0 and YellowScreen==0):
         ScreenColour='none'
-    
-    print 'Screen='+ ScreenColour
-    print 'Alarm='+ Alarm
+    returnvar = {};
+    returnvar['Color'] = ScreenColour
+    returnvar['Alarm'] = Alarm
+    returnvar['text'] = text
+    returnvar['criticalitems'] = criticalitems
+    returnvar['warningitems'] = warningitems
+    return (returnvar)
+    #print 'Screen='+ ScreenColour
+    #print 'Alarm='+ Alarm
 
-updatedata()
-getData()
+#updatedata()
+#getData()
