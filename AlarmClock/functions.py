@@ -14,8 +14,10 @@ def isset(object,key,secondary=None):
         except KeyError:
             return ""
                 
+applicationpath = "/home/pi/projects/AlarmClock/"
 
 def geolocate():
+    global applicationpath
     #we need the Lat and Long for weather, so we can do that first using ipstack.
     f = requests.request('GET', 'http://myip.dnsomatic.com')
     ip = f.text
@@ -24,7 +26,7 @@ def geolocate():
     data = r.json()
     #print data['latitude']
     #print data['longitude']
-    conn = sqlite3.connect('Settings.db') #this will create if it doesn't exist
+    conn = sqlite3.connect(applicationpath+'Settings.db') #this will create if it doesn't exist
     c = conn.cursor()
     dbQuery1 = "Delete from Settings WHERE Setting='Latitude'";
     c.execute(dbQuery1)
@@ -66,15 +68,16 @@ def checkTableExists(dbcon, tablename):
                 raise
 
 def setupTables():
-    conn = sqlite3.connect('Settings.db') #this will create if it doesn't exist
+    global applicationpath
+    conn = sqlite3.connect(applicationpath+'Settings.db') #this will create if it doesn't exist
     c = conn.cursor()
-    AIQdb = sqlite3.connect('AIQ.db') #this will create if it doesn't exist
+    AIQdb = sqlite3.connect(applicationpath+'AIQ.db') #this will create if it doesn't exist
     AIQc = AIQdb.cursor()
-    Weatherdb = sqlite3.connect('Weather.db') #this will create if it doesn't exist
+    Weatherdb = sqlite3.connect(applicationpath+'Weather.db') #this will create if it doesn't exist
     Weatherc = Weatherdb.cursor()
-    Nagiosconn = sqlite3.connect('Nagios.db') #this will create if it doesn't exist
+    Nagiosconn = sqlite3.connect(applicationpath+'Nagios.db') #this will create if it doesn't exist
     Nagiosc = Nagiosconn.cursor()
-    conn = sqlite3.connect('Settings.db') #this will create if it doesn't exist
+    conn = sqlite3.connect(applicationpath+'Settings.db') #this will create if it doesn't exist
     c = conn.cursor()
     if (checkTableExists(conn,'Settings')):
         True

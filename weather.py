@@ -2,15 +2,20 @@ from darksky import forecast
 from datetime import date, timedelta
 import sqlite3
 import datetime
-
+import LCD
 #from var_dump import var_dump
 import AlarmClock.functions as ACFunctions
 import threading
+applicationpath = "/home/pi/projects/AlarmClock/"
 
 
 def CurrentConditions():
     threading.Timer(900.0, CurrentConditions).start()
-    SettingsDB = sqlite3.connect('Settings.db')
+
+    global applicationpath
+    f = open(applicationpath+"application.log", "a")
+    f.write("----------------------------------\n"+str(datetime.datetime.now())+"\nWeather Updated\n-------------------------------------------") 
+    SettingsDB = sqlite3.connect(applicationpath+'Settings.db')
     Settingsc = SettingsDB.cursor()
     dbQuerya = "SELECT Value FROM Settings where Setting='Latitude'" #get all the data from the database
     Settingsc.execute(dbQuerya)
@@ -18,7 +23,7 @@ def CurrentConditions():
     dbQueryb = "SELECT Value FROM Settings where Setting='longitude'" #get all the data from the database
     Settingsc.execute(dbQueryb)
     longitude = Settingsc.fetchone()  
-    conn = sqlite3.connect('Weather.db')
+    conn = sqlite3.connect(applicationpath+'Weather.db')
     c = conn.cursor()
     c.execute("DELETE FROM weatherCurrentconditions");
     conn.commit()  
@@ -67,4 +72,31 @@ def CurrentConditions():
             c.execute( dbQuery2)
             conn.commit()  
             
-CurrentConditions()
+
+
+def DisplayCurrentConditions():
+	global applicationpath
+        conn = sqlite3.connect(applicationpath+'Weather.db')
+        c = conn.cursor()
+        dbQuerya = "SELECT * FROM weatherCurrentConditions" #get all the data from the database
+        c.execute(dbQuerya)
+        rows = c.fetchall()
+        conn.close()
+        text = ""
+        for row in rows:
+		summary = row[2]
+                date = row[0]
+                temperature = str(row[7])
+		temp = temperature.split('.')
+#		print temp[0]
+#               type = row[8]
+
+                text = text+ date[5:10]+' '+str(temp[0])+ "F\n"+summary+"\n"
+	print text
+        LCD.lcd.clear()
+        LCD.lcd.set_color(1,1,0) #yellow
+        LCD.lcd.message(text)
+
+
+#CurrentConditions()
+#DisplayCurrentConditions()

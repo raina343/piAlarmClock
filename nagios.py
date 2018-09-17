@@ -2,17 +2,24 @@ import requests
 from requests.auth import HTTPBasicAuth
 import sqlite3
 import datetime
+import LCD
+#import RPi.GPIO as GPIO
 #from var_dump import var_dump
 import threading
+from time import sleep
+def button_callback(channel):
+        print("Button was pushed!")
+applicationpath = "/home/pi/projects/AlarmClock/"
 
 def updatedata():
     #this is for getting data from the web
     threading.Timer(180.0, updatedata).start() #every 3 minutes we will run this function.  it will also run first when this script is first executed.
-
+    print 'updating data'
     r = requests.get('http://74.205.92.184/nagios/cgi-bin/statusjson.cgi?query=servicelist&formatoptions=whitespace+enumerate+bitmask+duration&contactname=nagiosadmin', auth=HTTPBasicAuth('nagiosadmin', 'P@$$w0rd22')) #ge the data from Nagios
     NagiosData = r.json() #parse the json
     now = datetime.datetime.now() #get a current timestamp, so all updates and inserts show the same time.
-    conn = sqlite3.connect('Nagios.db') #open db file.
+    global applicationpath
+    conn = sqlite3.connect(applicationpath+'Nagios.db') #open db file.
     c = conn.cursor()
     for xx in NagiosData['data']['servicelist']: #itterate through the returned data.
         for yy in NagiosData['data']['servicelist'][xx]:
@@ -41,8 +48,10 @@ def updatedata():
            
 def getData():
     #this is what will return the data from the database and update the display
-    threading.Timer(60.0, getData).start() #runs every 60 seconds
-    conn = sqlite3.connect('Nagios.db')
+#    threading.Timer(60.0, getData).start() #runs every 60 seconds
+    global applicationpath
+    #print applicationpath
+    conn = sqlite3.connect(applicationpath+'Nagios.db')
     c = conn.cursor()
     dbQuerya = "SELECT * FROM Nagios" #get all the data from the database
     c.execute(dbQuerya)
@@ -54,7 +63,7 @@ def getData():
     critical=0
     RedAlarm=0;
     YellowAlarm=0
- 
+    now = datetime.datetime.now() #get a current timestamp, so all updates and inserts show the same time.
     YellowScreen=0
     RedScreen=0
     criticalitems = "C: "
@@ -111,7 +120,9 @@ def getData():
     #print 'Warning '+ str(ServiceData['Warning']['total'])
     #print 'OK '+ str(ServiceData['OK']['total'])
     grandtotal = ServiceData['OK']['total']+ServiceData['Warning']['total']+ServiceData['Critical']['total']
-    text = 'T: '+str(grandtotal)+' / C:' + str(ServiceData['Critical']['total'])+' / W: '+ str(ServiceData['Warning']['total'])+' / OK: '+ str(ServiceData['OK']['total'])
+    text = 'T: '+str(grandtotal)+' / C:' + str(ServiceData['Critical']['total'])+' \nW: '+ str(ServiceData['Warning']['total'])+' / OK: '+ str(ServiceData['OK']['total'])
+    LCD.lcd.clear()
+
     if (RedAlarm==1 and YellowAlarm==1):
         Alarm='orange'
     if (RedAlarm==1 and YellowAlarm==0):
@@ -121,22 +132,35 @@ def getData():
     if (RedAlarm==0 and YellowAlarm==0):
         Alarm='none'
     if (RedScreen==1 and YellowScreen==1):
+        LCD.lcd.clear()
+        LCD.lcd.set_color(1,0,0) #Red
         ScreenColour='orange'
     if (RedScreen==1 and YellowScreen==0):
+        LCD.lcd.clear()
+        LCD.lcd.set_color(1,0,0) #Red
         ScreenColour='red'
     if (RedScreen==0 and YellowScreen==1):
+        LCD.lcd.clear()
+        LCD.lcd.set_color(1,1,0) #yellow
         ScreenColour='yellow'
     if (RedScreen==0 and YellowScreen==0):
         ScreenColour='none'
+        LCD.lcd.set_color(0,1,0) #green
+       
+        
     returnvar = {};
     returnvar['Color'] = ScreenColour
     returnvar['Alarm'] = Alarm
     returnvar['text'] = text
     returnvar['criticalitems'] = criticalitems
     returnvar['warningitems'] = warningitems
-    return (returnvar)
+    LCD.lcd.message(text)
+#    LCD.lcd(text)
+#    print returnvar
+#    return (returnvar)
     #print 'Screen='+ ScreenColour
     #print 'Alarm='+ Alarm
 
 #updatedata()
-#getData()
+getData()
+
